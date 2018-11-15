@@ -8,7 +8,6 @@
 
 #import <Foundation/Foundation.h>
 #import "MODKURLBaseResponse.h"
-#import "AFNetworking.h"
 
 @class MODKBaseApiManager;
 
