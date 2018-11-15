@@ -1,0 +1,11 @@
+use_frameworks!
+
+target 'MODKNetWorking_Example' do
+  pod 'MODKNetWorking', :path => '../'
+
+  target 'MODKNetWorking_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end
