@@ -15,7 +15,7 @@ NSString * const MODKNotiNetworkStatusChanged = @"MODKNotiNetworkStatusChanged";
 
 @interface MODKApiProxy ()
 
-@property (nonatomic, strong) NSString *baseUrlString;
+@property (nonatomic, strong) MODKAPIServicer *apiServicer;
 
 @property (nonatomic, strong) AFURLSessionManager *sessionManager;
 
@@ -37,7 +37,6 @@ NSString * const MODKNotiNetworkStatusChanged = @"MODKNotiNetworkStatusChanged";
 - (void)monitNetwork {
     
     [[AFNetworkReachabilityManager sharedManager] setReachabilityStatusChangeBlock:^(AFNetworkReachabilityStatus status) {
-        self.currentNetStatus = status;
         switch (status) {
             case AFNetworkReachabilityStatusUnknown:
                 [[NSNotificationCenter defaultCenter]postNotificationName:MODKNotiNetworkStatusChanged object:self userInfo:@{@"status":@(status),@"desc":@"未知网络"}];
@@ -59,16 +58,10 @@ NSString * const MODKNotiNetworkStatusChanged = @"MODKNotiNetworkStatusChanged";
      
 }
 
-- (void)config:(MODKEnvironmentType)type {
-    switch (type) {
-        case MODKEnvironmentTypeAppDev:
-            self.baseUrlString = @"http://dev.api.zwdbj.com/m";
-            break;
-        case MODKEnvironmentTypeRelease:
-            self.baseUrlString = @"http://api.zwdbj.com/m";
-            break;
-        default:
-            break;
+- (void)config:(MODKAPIServicer *)service {
+    _apiServicer = service;
+    if (service.isMoniNetwork) {
+        [self monitNetwork];
     }
 }
 
@@ -86,7 +79,7 @@ NSString * const MODKNotiNetworkStatusChanged = @"MODKNotiNetworkStatusChanged";
     [header enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
         [seri setValue:obj forHTTPHeaderField:key];
     }];
-    NSMutableURLRequest *request = [seri requestWithMethod:@"GET" URLString:[NSString stringWithFormat:@"%@%@",_baseUrlString,urlString] parameters:params error:nil];
+    NSMutableURLRequest *request = [seri requestWithMethod:@"GET" URLString:[NSString stringWithFormat:@"%@%@",_apiServicer.baseUrlString,urlString] parameters:params error:nil];
     return [self callApiWithRequest:request success:success fail:fail];
 }
 
@@ -95,7 +88,7 @@ NSString * const MODKNotiNetworkStatusChanged = @"MODKNotiNetworkStatusChanged";
     [header enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
         [seri setValue:obj forHTTPHeaderField:key];
     }];
-    NSMutableURLRequest *request = [seri requestWithMethod:@"POST" URLString:[NSString stringWithFormat:@"%@%@",_baseUrlString,urlString] parameters:params error:nil];
+    NSMutableURLRequest *request = [seri requestWithMethod:@"POST" URLString:[NSString stringWithFormat:@"%@%@",_apiServicer.baseUrlString,urlString] parameters:params error:nil];
     
     return [self callApiWithRequest:request success:success fail:fail];
 }
@@ -105,7 +98,7 @@ NSString * const MODKNotiNetworkStatusChanged = @"MODKNotiNetworkStatusChanged";
     [header enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
         [seri setValue:obj forHTTPHeaderField:key];
     }];
-    NSMutableURLRequest *request = [seri requestWithMethod:@"POST" URLString:[NSString stringWithFormat:@"%@%@",_baseUrlString,urlString] parameters:params error:nil];
+    NSMutableURLRequest *request = [seri requestWithMethod:@"POST" URLString:[NSString stringWithFormat:@"%@%@",_apiServicer.baseUrlString,urlString] parameters:params error:nil];
     return [self callApiWithRequest:request success:success fail:fail];
 }
 
@@ -132,10 +125,6 @@ NSString * const MODKNotiNetworkStatusChanged = @"MODKNotiNetworkStatusChanged";
        // _sessionManager.completionQueue = dispatch_get_global_queue(0, 0);
     }
     return _sessionManager;
-}
-
-- (NSString *)baseUrl {
-    return self.baseUrlString;
 }
 
 @end

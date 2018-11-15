@@ -14,7 +14,6 @@ NSString * const MODKApiErrorTypeStringNetwork = @"MODKApiErrorTypeStringNetwork
 
 NSString * const MODKApiErrorTypeStringBusiness = @"MODKApiErrorTypeStringBusiness"; // 业务逻辑错误
 
-NSString * const MODKApiErrorTypeNeedLog = @"MODKApiErrorTypeNeedLog"; // 需要登录
 
 @interface MODKBaseApiManager ()
 
@@ -29,6 +28,7 @@ NSString * const MODKApiErrorTypeNeedLog = @"MODKApiErrorTypeNeedLog"; // 需要
     _paramsDelegate = nil;
     _IntercepteDelegate = nil;
     _validateDelegate = nil;
+    _errorFilterDelegate = nil;
     [_task cancel];
 }
 
@@ -55,7 +55,7 @@ NSString * const MODKApiErrorTypeNeedLog = @"MODKApiErrorTypeNeedLog"; // 需要
 }
 - (NSDictionary *)httpHeader {
     
-    return nil;
+    return @{};
 }
 
 - (NSURLSessionDataTask *)loadData {
@@ -119,21 +119,18 @@ NSString * const MODKApiErrorTypeNeedLog = @"MODKApiErrorTypeNeedLog"; // 需要
         }
         return;
     }
-    // 处理业务 错误
-    if ([responseObj[@"code"] integerValue] == 401) {
-        // 需要登录
-        [[NSNotificationCenter defaultCenter]postNotificationName:MODKApiErrorTypeNeedLog object:self];
-        return;
-    } else if ([responseObj[@"success"] integerValue] != 1) {
-        error = [NSError errorWithDomain:@"dbjError" code:[responseObj[@"success"] integerValue] userInfo:@{NSLocalizedDescriptionKey:responseObj[@"msg"]}];
-    }
-    if (error) {
-        if ([_delegate respondsToSelector:@selector(managerCallApiDidFailed:error:)]) {
-            [self beforePerformFailWithError:error];
-            [_delegate managerCallApiDidFailed:self error:error];
-            [self afterPerformFailWithError:error];
+    if ([_errorFilterDelegate respondsToSelector:@selector(errorByFilterWithResponseObjct:apiManager:error:)]) {
+        BOOL isSend = [_errorFilterDelegate errorByFilterWithResponseObjct:responseObj apiManager:self error:&error];
+        if (error) {
+            if (isSend) {
+                if ([_delegate respondsToSelector:@selector(managerCallApiDidFailed:error:)]) {
+                    [self beforePerformFailWithError:error];
+                    [_delegate managerCallApiDidFailed:self error:error];
+                    [self afterPerformFailWithError:error];
+                }
+            }
+            return;
         }
-        return;
     }
     if ([_delegate respondsToSelector:@selector(managerCallApiDidSuccess:responseObject:)]) {
         [self beforePerformSuccessWithResponseObject:responseObj];
@@ -143,14 +140,6 @@ NSString * const MODKApiErrorTypeNeedLog = @"MODKApiErrorTypeNeedLog"; // 需要
     
 }
 - (void)callFailApi:(NSError *)error response:(NSURLResponse *)response {
-    if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
-        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-        if (httpResponse.statusCode == 401) {
-            // 需要登录
-            [[NSNotificationCenter defaultCenter]postNotificationName:MODKApiErrorTypeNeedLog object:self];
-            return;
-        }
-    }
     if ([_delegate respondsToSelector:@selector(managerCallApiDidFailed:error:)]) {
          [self beforePerformFailWithError:error];
         [_delegate managerCallApiDidFailed:self error:error];

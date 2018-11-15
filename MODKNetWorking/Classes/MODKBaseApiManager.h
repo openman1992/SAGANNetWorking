@@ -84,6 +84,25 @@ typedef NS_ENUM (NSUInteger, MODKApiManagerRequestType){
 
 @end
 
+/**
+ *  错误 过滤器
+ */
+@protocol MODKResponeErrorFilterDelegate <NSObject>
+
+@required;
+/**
+ *  responseObject 从服务器上拉取的数据
+ *  可以通过此方法过滤一些错误 如业务逻辑层上的错误 保证success回调是正确的数据，可以直接拿来使用的是必要的
+ *  @parm responseObject 服务器拉取的数据
+ *  @parm error 是否存在错误
+ *  @return 当有error时，是否执行失败回调 场景使用：如当某个接口遇到401状态时，需要重新拉取授权信息，这时可以把apiManager临时保存下来，在拉取授权信息之后唤醒它 
+ */
+- (BOOL)errorByFilterWithResponseObjct:(id)responseObject apiManager:(MODKBaseApiManager *)manager error:(NSError **)error;
+
+
+
+@end
+
 #pragma mark -
 #pragma mark MODKApiManagerInterceptor
 
@@ -120,6 +139,8 @@ typedef NS_ENUM (NSUInteger, MODKApiManagerRequestType){
 @property (nonatomic, weak) id<MODKApiManagerValidator> validateDelegate;
 
 @property (nonatomic, weak) id<MODKApiManagerInterceptor> IntercepteDelegate;
+
+@property (nonatomic, weak) id<MODKResponeErrorFilterDelegate> errorFilterDelegate;
 
 @property (nonatomic, weak) id<MODKApiManager>mochild;
 

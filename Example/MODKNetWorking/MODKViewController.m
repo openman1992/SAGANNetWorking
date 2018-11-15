@@ -7,8 +7,11 @@
 //
 
 #import "MODKViewController.h"
+#import "YourNameGetListApiManager.h"
 
-@interface MODKViewController ()
+@interface MODKViewController () <MODKApiManagerApiCallbackDelegate>
+
+@property (nonatomic, strong) YourNameGetListApiManager *listApiManager;
 
 @end
 
@@ -18,6 +21,24 @@
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
+    [self.listApiManager loadData];
+}
+
+- (void)managerCallApiDidSuccess:(MODKBaseApiManager *)manager responseObject:(id)responseObject {
+    NSLog(@"%@",responseObject);
+}
+
+- (void)managerCallApiDidFailed:(MODKBaseApiManager *)manager error:(NSError *)error {
+    
+}
+
+
+- (YourNameGetListApiManager *)listApiManager {
+    if (!_listApiManager) {
+        _listApiManager = [[YourNameGetListApiManager alloc]init];
+        _listApiManager.delegate = self;
+    }
+    return _listApiManager;
 }
 
 - (void)didReceiveMemoryWarning

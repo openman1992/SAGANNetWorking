@@ -7,12 +7,15 @@
 //
 
 #import "MODKAppDelegate.h"
+#import "MODKApiProxy.h"
 
 @implementation MODKAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     // Override point for customization after application launch.
+    MODKAPIServicer *apiServicer = [[MODKAPIServicer alloc]initWithBaseUrlString:@"http://api.zwdbj.com/m"];
+    [[MODKApiProxy sharedInstance]config:apiServicer];
     return YES;
 }
 

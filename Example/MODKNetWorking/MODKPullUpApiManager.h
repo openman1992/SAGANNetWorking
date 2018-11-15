@@ -6,7 +6,7 @@
 //  Copyright © 2018年 意想不到. All rights reserved.
 //
 
-#import "MODKBaseApiManager.h"
+#import "YourNameApiManager.h"
 
 typedef NS_ENUM (NSUInteger, MODKPullUpApiManagerRefreshType){
     MODKPullUpApiManagerRefreshTypeNormal = 0, // 正常
@@ -14,8 +14,9 @@ typedef NS_ENUM (NSUInteger, MODKPullUpApiManagerRefreshType){
     MODKPullUpApiManagerRefreshTypePullUp = 2,  // 上拉加载
 };
 
+// 下拉刷新和上啦加载的 
 
-@interface MODKPullUpApiManager : MODKBaseApiManager
+@interface MODKPullUpApiManager :YourNameApiManager
 
 @property (nonatomic, assign ,readonly) NSInteger currentPage;
 
